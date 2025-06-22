@@ -40,6 +40,7 @@ jobs:
               rustup default 1.85.0
               apt-get update
               apt-get install -y build-essential libssl-dev pkg-config libssl3
+              ls /usr/include/openssl/opensslv.h
               export OPENSSL_DIR="/usr"
               export OPENSSL_INCLUDE_DIR="/usr/include"
               yarn build --target x86_64-unknown-linux-gnu
@@ -56,6 +57,7 @@ jobs:
               rustup target add aarch64-unknown-linux-gnu
               apt-get update
               apt-get install -y build-essential libssl-dev pkg-config libssl3
+              ls /usr/include/openssl/opensslv.h
               export OPENSSL_DIR="/usr"
               export OPENSSL_INCLUDE_DIR="/usr/include"
               yarn build --target aarch64-unknown-linux-gnu
