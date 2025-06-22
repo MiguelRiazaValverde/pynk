@@ -55,9 +55,15 @@ jobs:
         with:
           node-version: 20
           cache: yarn
-      - name: Install
+      - name: Install Rust (nightly only on Linux)
+        uses: dtolnay/rust-toolchain@nightly
+        if: runner.os == 'Linux' && !matrix.settings.docker
+        with:
+          toolchain: nightly
+          targets: ${{ matrix.settings.target }}
+      - name: Install Rust (stable on other platforms)
         uses: dtolnay/rust-toolchain@stable
-        if: ${{ !matrix.settings.docker }}
+        if: runner.os != 'Linux' && !matrix.settings.docker
         with:
           toolchain: stable
           targets: ${{ matrix.settings.target }}
