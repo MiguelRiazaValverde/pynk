@@ -17,6 +17,10 @@ tor-config = "=0.31.0"
 [build-dependencies]
 napi-build = "2.0.1"
 
+[dependencies.rusqlite]
+version = "^0.32.1"
+features = ["bundled"]
+
 [profile.release]
 lto = true
 strip = "symbols"

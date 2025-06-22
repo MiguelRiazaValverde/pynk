@@ -55,12 +55,6 @@ jobs:
         with:
           node-version: 20
           cache: yarn
-      - name: Install SQLite3 on Windows
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          choco install sqlite -y
-          sqlite3 --version
       - name: Install
         uses: dtolnay/rust-toolchain@stable
         if: ${{ !matrix.settings.docker }}
