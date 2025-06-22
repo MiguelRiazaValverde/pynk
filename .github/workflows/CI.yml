@@ -49,18 +49,10 @@ jobs:
     runs-on: ${{ matrix.settings.host }}
     steps:
       - uses: actions/checkout@v4
-      - name: Download SQLite3 for Windows
-        run: |
-          curl -L -o sqlite-dll-win64-x64-3450200.zip https://www.sqlite.org/2024/sqlite-dll-win64-x64-3450200.zip
-          curl -L -o sqlite-lib-win64-x64-3450200.zip https://www.sqlite.org/2024/sqlite-lib-win64-x64-3450200.zip
-          unzip sqlite-dll-win64-x64-3450200.zip -d ${{ github.workspace }}/sqlite
-          unzip sqlite-lib-win64-x64-3450200.zip -d ${{ github.workspace }}/sqlite
-
-      - name: Add SQLite3 to library path
-        run: |
-          echo "${{ github.workspace }}\\sqlite" >> $GITHUB_PATH
-          echo "LIB=${{ github.workspace }}\\sqlite" >> $GITHUB_ENV
-          echo "SQLITE3_LIB_DIR=${{ github.workspace }}\\sqlite" >> $GITHUB_ENV
+      - uses: actions/setup-sqlite@v1
+        with:
+          sqlite-version: 3.40.0
+          sqlite-year: 2022
       - name: Setup node
         uses: actions/setup-node@v4
         if: ${{ !matrix.settings.docker }}
