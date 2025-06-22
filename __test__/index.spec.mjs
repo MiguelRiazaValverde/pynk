@@ -30,7 +30,7 @@ function parseHttpResponse(buffer) {
  * Perform a raw HTTP request through Tor.
  */
 async function torHttpRequest(hostname, path = '/') {
-  const cacheDir = pathNode.join(os.tmpdir(), `arti-cache-${Date.now()}-${Math.random()}`);
+  const cacheDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${Math.random()}`);
   await fs.mkdir(cacheDir, { recursive: true });
   const conf = TorClientConfig.create();
   conf.storage.cacheDir(cacheDir);
