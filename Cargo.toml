@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 # Default enable napi4 feature, see https://nodejs.org/api/n-api.html#node-api-version-matrix
 napi = { version = "2.12.2", default-features = false, features = ["full"] }
 napi-derive = "2.12.2"
-arti-client = { version = "=0.31.0", features = ["full", "geoip"] }
+arti-client = { version = "=0.31.0", features = ["full", "geoip", "rustls"] }
 tor-rtcompat = "=0.31.0"
 tor-config = "=0.31.0"
 
