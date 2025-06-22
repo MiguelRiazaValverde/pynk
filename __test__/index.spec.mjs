@@ -1,7 +1,8 @@
 import test from 'ava'
 
-// import { sum } from '../index.js'
+import { TorClient } from '../index.js'
 
 test('true', (t) => {
+  // TorClient.create();
   t.is(true, true)
 })
