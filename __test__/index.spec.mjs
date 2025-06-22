@@ -1,6 +1,9 @@
+import os from 'os';
 import test from 'ava';
+import * as pathNode from 'path';
+import fs from 'fs/promises';
 import http from 'http';
-import { TorClient } from '../index.js';
+import { TorClient, TorClientBuilder, TorClientConfig } from '../index.js';
 
 /**
  * Parse a raw HTTP response buffer into status, headers, and body.
@@ -27,6 +30,11 @@ function parseHttpResponse(buffer) {
  * Perform a raw HTTP request through Tor.
  */
 async function torHttpRequest(hostname, path = '/') {
+  const cacheDir = pathNode.join(os.tmpdir(), `arti-cache-${Date.now()}-${Math.random()}`);
+  await fs.mkdir(cacheDir, { recursive: true });
+  const conf = TorClientConfig.create();
+  conf.storage.cacheDir(cacheDir);
+  const builder = TorClientBuilder.create(conf);
   const client = await TorClient.create();
   const stream = await client.connect(`${hostname}:80`);
 
