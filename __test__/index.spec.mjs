@@ -35,7 +35,7 @@ async function torHttpRequest(hostname, path = '/') {
   const conf = TorClientConfig.create();
   conf.storage.cacheDir(cacheDir);
   const builder = TorClientBuilder.create(conf);
-  const client = await TorClient.create();
+  const client = await TorClient.create(builder);
   const stream = await client.connect(`${hostname}:80`);
 
   const request = Buffer.from(
