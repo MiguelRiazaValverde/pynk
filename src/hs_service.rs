@@ -15,6 +15,14 @@ pub struct NativeRendRequest {
 
 #[napi]
 impl NativeRendRequest {
+  #[napi(constructor)]
+  pub fn new() -> napi::Result<Self> {
+    Err(napi::Error::new(
+      napi::Status::GenericFailure,
+      "This class cannot be constructed manually.".to_string(),
+    ))
+  }
+
   pub fn from_rend_request(request: RendRequest) -> Self {
     Self {
       request: Some(request),
@@ -52,6 +60,14 @@ pub struct NativeOnionService {
 
 #[napi]
 impl NativeOnionService {
+  #[napi(constructor)]
+  pub fn new() -> napi::Result<Self> {
+    Err(napi::Error::new(
+      napi::Status::GenericFailure,
+      "This class cannot be constructed manually.".to_string(),
+    ))
+  }
+
   pub fn from_service(
     service: Arc<RunningOnionService>,
     rend_request: impl Stream<Item = RendRequest> + Send + Unpin + 'static,

@@ -16,6 +16,14 @@ pub struct NativeStreamRequest {
 
 #[napi]
 impl NativeStreamRequest {
+  #[napi(constructor)]
+  pub fn new() -> napi::Result<Self> {
+    Err(napi::Error::new(
+      napi::Status::GenericFailure,
+      "This class cannot be constructed manually.".to_string(),
+    ))
+  }
+
   pub fn from_stream_request(request: StreamRequest) -> Self {
     Self {
       request: Some(request),
@@ -58,6 +66,14 @@ unsafe impl Sync for NativeStreamsRequest {}
 
 #[napi]
 impl NativeStreamsRequest {
+  #[napi(constructor)]
+  pub fn new() -> napi::Result<Self> {
+    Err(napi::Error::new(
+      napi::Status::GenericFailure,
+      "This class cannot be constructed manually.".to_string(),
+    ))
+  }
+
   pub fn from_streams_request(
     streams_request: impl Stream<Item = StreamRequest> + Send + Unpin + 'static,
   ) -> Self {
