@@ -341,6 +341,20 @@ impl ConfigStorage {
     self.config.borrow_mut().storage().state_dir(path);
     self
   }
+
+  /**
+   * Whether keystore use is enabled.
+   */
+  #[napi]
+  pub fn keystore(&mut self, enabled: bool) -> &Self {
+    self
+      .config
+      .borrow_mut()
+      .storage()
+      .keystore()
+      .enabled(tor_config::BoolOrAuto::Explicit(enabled));
+    self
+  }
 }
 
 #[napi]

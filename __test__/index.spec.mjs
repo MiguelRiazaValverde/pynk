@@ -4,6 +4,7 @@ import * as pathNode from 'path';
 import fs from 'fs/promises';
 import http from 'http';
 import { TorClient, TorClientBuilder, TorClientConfig } from '../index.js';
+import { OnionServiceConfig } from '../index.js';
 
 /**
  * Parse a raw HTTP response buffer into status, headers, and body.
@@ -120,4 +121,23 @@ test('Tor can access .onion site (DuckDuckGo)', async t => {
     response.body.includes('DuckDuckGo') || response.body.includes('<html'),
     'Response should contain HTML'
   );
+});
+
+test('Hidden service', async t => {
+  const torConfig = TorClientConfig.create();
+  torConfig.storage.keystore();
+  torConfig.storage.stateDir("./tor");
+  const client = await TorClient.create(TorClientBuilder.create(torConfig));
+  const config = OnionServiceConfig.create();
+  config.nickname("30301");
+  const service = client.createOnionService(config, Buffer.from(Uint8Array.from([
+    138, 210, 223, 48, 194, 21, 181, 91, 28, 80, 87,
+    180, 145, 180, 73, 216, 229, 62, 49, 219, 33, 166,
+    26, 239, 226, 120, 199, 12, 111, 82, 73, 8, 155,
+    162, 169, 164, 17, 202, 168, 209, 92, 253, 125, 71,
+    66, 109, 66, 189, 239, 115, 3, 50, 14, 107, 184,
+    46, 142, 42, 128, 109, 172, 225, 242, 136
+  ])));
+  console.log(service.address());
+  t.is(1, 1);
 });

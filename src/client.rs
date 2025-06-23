@@ -1,8 +1,13 @@
 use crate::client_builder::NativeTorClientBuilder;
+use crate::hs_config::NativeOnionServiceConfig;
+use crate::hs_service::NativeOnionService;
 use crate::stream::NativeTorStream;
 use crate::stream_prefs::NativeStreamPrefs;
 use crate::utils;
 use arti_client::TorClient;
+use napi::JsBuffer;
+use tor_hscrypto::pk::HsIdKeypair;
+use tor_llcrypto::pk::ed25519::{ExpandedKeypair, Keypair};
 use tor_rtcompat::PreferredRuntime;
 
 #[napi(js_name = "TorClient")]
@@ -82,5 +87,57 @@ impl NativeTorClient {
   pub fn set_stream_prefs(&mut self, stream_prefs: &NativeStreamPrefs) -> &Self {
     self.client.set_stream_prefs(stream_prefs.get());
     self
+  }
+
+  /**
+   * Creates and returns a new hidden service.
+   */
+  #[napi]
+  pub fn create_onion_service(
+    &self,
+    onion_service_config: &NativeOnionServiceConfig,
+  ) -> napi::Result<NativeOnionService> {
+    let (service, rend_request) = utils::map_error(
+      self
+        .client
+        .launch_onion_service(utils::map_error(onion_service_config.build())?),
+    )?;
+    Ok(NativeOnionService::from_service(service, rend_request))
+  }
+
+  /**
+   * Creates a new hidden service using a provided private key.
+   * The key format must have the private key in the first 32 bytes.
+   */
+  #[napi]
+  pub fn create_onion_service_with_key(
+    &self,
+    onion_service_config: &NativeOnionServiceConfig,
+    bytes: JsBuffer,
+  ) -> napi::Result<NativeOnionService> {
+    let bytes_value = bytes.into_value().unwrap();
+    let slice = bytes_value.as_ref();
+
+    if slice.len() < 32 {
+      return Err(napi::Error::from_reason::<String>(
+        "Expected 32 bytes for the key".into(),
+      ));
+    }
+
+    let mut key_bytes = [0u8; 32];
+    key_bytes.copy_from_slice(&slice[0..32]);
+
+    let secret: [u8; 32] = utils::map_error(key_bytes[0..32].try_into())?;
+    let kay_pair = Keypair::from_bytes(&secret);
+    let expanded = ExpandedKeypair::from(&kay_pair);
+
+    let hsid_keypair = HsIdKeypair::from(expanded);
+
+    let (service, rend_request) = utils::map_error(self.client.launch_onion_service_with_hsid(
+      utils::map_error(onion_service_config.build())?,
+      hsid_keypair,
+    ))?;
+
+    Ok(NativeOnionService::from_service(service, rend_request))
   }
 }

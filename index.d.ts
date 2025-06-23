@@ -52,6 +52,15 @@ export declare class TorClient {
   * Connection preferences always override configuration, even configuration set later (eg, by a config reload).
   */
   setStreamPrefs(streamPrefs: NativeStreamPrefs): this
+  /**
+  * Creates and returns a new hidden service.
+  */
+  createOnionService(onionServiceConfig: NativeOnionServiceConfig): NativeOnionService
+  /**
+  * Creates a new hidden service using a provided private key.
+  * The key format must have the private key in the first 32 bytes.
+  */
+  createOnionServiceWithKey(onionServiceConfig: NativeOnionServiceConfig, bytes: Buffer): NativeOnionService
 }
 export type NativeTorClientBuilder = TorClientBuilder
 export declare class TorClientBuilder {
@@ -188,6 +197,10 @@ export declare class ConfigStorage {
   * Location on disk for less-sensitive persistent state information.
   */
   stateDir(dir: string): this
+  /**
+  * Whether keystore use is enabled.
+  */
+  keystore(enabled: boolean): this
 }
 export declare class ConfigStreamTimeouts {
   /**
@@ -249,6 +262,23 @@ export declare class TorClientConfig {
   */
   get streamTimeouts(): ConfigStreamTimeouts
 }
+export type NativeOnionServiceConfig = OnionServiceConfig
+export declare class OnionServiceConfig {
+  constructor()
+  static create(): OnionServiceConfig
+  /**
+  * The nickname used to look up this service's keys, state, configuration, etc.
+  */
+  nickname(nickname: string): void
+}
+export type NativeRendRequest = RendRequest
+export declare class RendRequest { }
+export type NativeOnionService = OnionService
+export declare class OnionService { }
+export type NativeStreamRequest = StreamRequest
+export declare class StreamRequest { }
+export type NativeStreamsRequest = StreamsRequest
+export declare class StreamsRequest { }
 export type NativeTorStream = TorStream
 export declare class TorStream {
   constructor()
