@@ -272,13 +272,46 @@ export declare class OnionServiceConfig {
   nickname(nickname: string): void
 }
 export type NativeRendRequest = RendRequest
-export declare class RendRequest { }
+export declare class RendRequest {
+  constructor()
+  accept(): Promise<NativeStreamsRequest | null>
+  reject(): Promise<void>
+}
 export type NativeOnionService = OnionService
-export declare class OnionService { }
+export declare class OnionService {
+  constructor()
+  /**
+  * Retrieves the next RendRequest in the queue.
+  */
+  poll(): Promise<RendRequest | null>
+  /**
+  * Return the onion address of this service.
+  * Clients must know the service's onion address in order to discover or connect to it.
+  * Returns `null|undefined` if the HsId of the service could not be found in any of the configured keystores.
+  */
+  address(): string | null
+}
 export type NativeStreamRequest = StreamRequest
-export declare class StreamRequest { }
+export declare class StreamRequest {
+  constructor()
+  /**
+  * Accept this request and send the client a CONNECTED message.
+  * Returns a TorStream.
+  */
+  accept(): Promise<NativeTorStream | null>
+  /**
+  * Reject this request, and send the client an END message.
+  */
+  reject(): Promise<void>
+}
 export type NativeStreamsRequest = StreamsRequest
-export declare class StreamsRequest { }
+export declare class StreamsRequest {
+  constructor()
+  /**
+  * Retrieves the next StreamRequest in the queue.
+  */
+  poll(): Promise<StreamRequest | null>
+}
 export type NativeTorStream = TorStream
 export declare class TorStream {
   constructor()
