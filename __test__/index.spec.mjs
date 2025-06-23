@@ -126,7 +126,8 @@ test('Tor can access .onion site (DuckDuckGo)', async t => {
 test('Hidden service', async t => {
   const torConfig = TorClientConfig.create();
   torConfig.storage.keystore(true);
-  torConfig.storage.stateDir("./tor");
+  const tempDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${Math.random()}`);
+  torConfig.storage.stateDir(tempDir);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
   const config = OnionServiceConfig.create();
   config.nickname("30301");
