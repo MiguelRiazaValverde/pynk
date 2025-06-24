@@ -5,6 +5,8 @@ import fs from 'fs/promises';
 import http from 'http';
 import { TorClient, TorClientBuilder, TorClientConfig } from '../index.js';
 import { OnionServiceConfig } from '../index.js';
+import { TorStream } from '../index.js';
+import { generateKeys, generateOnionV3 } from 'torv3';
 
 /**
  * Parse a raw HTTP response buffer into status, headers, and body.
@@ -106,9 +108,6 @@ test('Tor IP and direct IP differ', async t => {
   const torIp = JSON.parse(torResponse.body).origin;
   const directIp = JSON.parse(directResponse.body).origin;
 
-  console.log('Tor IP:', torIp);
-  console.log('Direct IP:', directIp);
-
   t.not(torIp, directIp);
 });
 
@@ -130,15 +129,22 @@ test('Hidden service', async t => {
   torConfig.storage.stateDir(tempDir);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
   const config = OnionServiceConfig.create();
-  config.nickname("30301");
-  const service = client.createOnionService(config, Buffer.from(Uint8Array.from([
-    138, 210, 223, 48, 194, 21, 181, 91, 28, 80, 87,
-    180, 145, 180, 73, 216, 229, 62, 49, 219, 33, 166,
-    26, 239, 226, 120, 199, 12, 111, 82, 73, 8, 155,
-    162, 169, 164, 17, 202, 168, 209, 92, 253, 125, 71,
-    66, 109, 66, 189, 239, 115, 3, 50, 14, 107, 184,
-    46, 142, 42, 128, 109, 172, 225, 242, 136
-  ])));
-  console.log(service.address());
-  t.is(1, 1);
+  config.nickname(`nickname-${Math.floor(Math.random() * 10000)}`);
+
+  const keys = generateOnionV3();
+  const service = client.createOnionServiceWithKey(config, keys.privateKey);
+
+  const [serverStream, clientStream] = await Promise.all([
+    service.poll().then(async rendRequest => {
+      const streams = await rendRequest.accept();
+      const streamRequest = await streams.poll();
+      const stream = await streamRequest.accept();
+      return stream;
+    }),
+    client.connect(service.address() + ":80")
+  ]);
+
+  t.is(service.address(), keys.address, "service address should match expected onion URL");
+  t.truthy(serverStream instanceof TorStream, "serverStream should be an instance of TorStream");
+  t.truthy(clientStream instanceof TorStream, "clientStream should be an instance of TorStream");
 });

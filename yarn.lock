@@ -95,6 +95,7 @@ __metadata:
     "@napi-rs/cli": "npm:^2.18.4"
     "@types/node": "npm:^24.0.3"
     ava: "npm:^6.0.1"
+    torv3: "npm:^1.2.4"
   languageName: unknown
   linkType: soft
 
@@ -329,6 +330,74 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bare-addon-resolve@npm:^1.3.0":
+  version: 1.9.4
+  resolution: "bare-addon-resolve@npm:1.9.4"
+  dependencies:
+    bare-module-resolve: "npm:^1.10.0"
+    bare-semver: "npm:^1.0.0"
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: 10c0/f461472fefff2c1a5f1a631bb409d2f3bddaf29d51d0ece6434df319935a8dbb6b4c25600d7524a0a8c09caf1bb3d262c4d9814ea3c7cb7925ad71f3af3d8574
+  languageName: node
+  linkType: hard
+
+"bare-module-resolve@npm:^1.10.0":
+  version: 1.11.1
+  resolution: "bare-module-resolve@npm:1.11.1"
+  dependencies:
+    bare-semver: "npm:^1.0.0"
+  peerDependencies:
+    bare-url: "*"
+  peerDependenciesMeta:
+    bare-url:
+      optional: true
+  checksum: 10c0/5d23dcfee29beeccc5afa42deba13b02b701f8e57ad18dd80374bbfd7a3f8311b1eb2cbe2bdd5bd6b2cb137decb9a589ef510142efb42031c95cb59bdd348e1e
+  languageName: node
+  linkType: hard
+
+"bare-os@npm:^3.0.1":
+  version: 3.6.1
+  resolution: "bare-os@npm:3.6.1"
+  checksum: 10c0/13064789b3d0d3051d6a89424e6d861c08be101798d69faa78821cffb428b36d1fd4e17c824d5a4939bcd96dbff42c11921494139c8e53c3e520bc0e3f83aeee
+  languageName: node
+  linkType: hard
+
+"bare-path@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "bare-path@npm:3.0.0"
+  dependencies:
+    bare-os: "npm:^3.0.1"
+  checksum: 10c0/56a3ca82a9f808f4976cb1188640ac206546ce0ddff582afafc7bd2a6a5b31c3bd16422653aec656eeada2830cfbaa433c6cbf6d6b4d9eba033d5e06d60d9a68
+  languageName: node
+  linkType: hard
+
+"bare-semver@npm:^1.0.0":
+  version: 1.0.1
+  resolution: "bare-semver@npm:1.0.1"
+  checksum: 10c0/60f19bdca641f619b7a9edd3f3122738c62a21d7c1327d9724a817b7745ac182439b1dea8a5c2ef01fadbf385d2719569083b012c587182fee7b7244b8da4b39
+  languageName: node
+  linkType: hard
+
+"bare-url@npm:^2.1.0":
+  version: 2.1.6
+  resolution: "bare-url@npm:2.1.6"
+  dependencies:
+    bare-path: "npm:^3.0.0"
+  checksum: 10c0/1ae8768d6e48c2ee46f7710d118ce8baae64d3f66bdc819831f1b50ea873201ae1d63306c4407115bc7963d968fef4d16879fc537a253d33aeeda30b8a0d0802
+  languageName: node
+  linkType: hard
+
+"base64-js@npm:^1.3.1":
+  version: 1.5.1
+  resolution: "base64-js@npm:1.5.1"
+  checksum: 10c0/f23823513b63173a001030fae4f2dabe283b99a9d324ade3ad3d148e218134676f1ee8568c877cd79ec1c53158dcf2d2ba527a97c606618928ba99dd930102bf
+  languageName: node
+  linkType: hard
+
 "bindings@npm:^1.4.0":
   version: 1.5.0
   resolution: "bindings@npm:1.5.0"
@@ -360,6 +429,16 @@ __metadata:
   dependencies:
     fill-range: "npm:^7.1.1"
   checksum: 10c0/7c6dfd30c338d2997ba77500539227b9d1f85e388a5f43220865201e407e076783d0881f2d297b9f80951b4c957fcf0b51c1d2d24227631643c3f7c284b0aa04
+  languageName: node
+  linkType: hard
+
+"buffer@npm:6.0.3":
+  version: 6.0.3
+  resolution: "buffer@npm:6.0.3"
+  dependencies:
+    base64-js: "npm:^1.3.1"
+    ieee754: "npm:^1.2.1"
+  checksum: 10c0/2a905fbbcde73cc5d8bd18d1caa23715d5f83a5935867c2329f0ac06104204ba7947be098fe1317fbd8830e26090ff8e764f08cd14fefc977bb248c3487bcbd0
   languageName: node
   linkType: hard
 
@@ -756,6 +835,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"hi-base32@npm:^0.5.1":
+  version: 0.5.1
+  resolution: "hi-base32@npm:0.5.1"
+  checksum: 10c0/45adb99249b04108fd689cb344f4b625b49d0518327117c34c403dbaf4723aaefb2a1bde6d7a0288ff0f835970d0f844a3ae103534dc237c99b8552a0e689177
+  languageName: node
+  linkType: hard
+
 "https-proxy-agent@npm:^7.0.5":
   version: 7.0.6
   resolution: "https-proxy-agent@npm:7.0.6"
@@ -763,6 +849,13 @@ __metadata:
     agent-base: "npm:^7.1.2"
     debug: "npm:4"
   checksum: 10c0/f729219bc735edb621fa30e6e84e60ee5d00802b8247aac0d7b79b0bd6d4b3294737a337b93b86a0bd9e68099d031858a39260c976dc14cdbba238ba1f8779ac
+  languageName: node
+  linkType: hard
+
+"ieee754@npm:^1.2.1":
+  version: 1.2.1
+  resolution: "ieee754@npm:1.2.1"
+  checksum: 10c0/b0782ef5e0935b9f12883a2e2aa37baa75da6e66ce6515c168697b42160807d9330de9a32ec1ed73149aea02e0d822e572bca6f1e22bdcbd2149e13b050b17bb
   languageName: node
   linkType: hard
 
@@ -1148,6 +1241,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"require-addon@npm:^1.1.0":
+  version: 1.1.0
+  resolution: "require-addon@npm:1.1.0"
+  dependencies:
+    bare-addon-resolve: "npm:^1.3.0"
+    bare-url: "npm:^2.1.0"
+  checksum: 10c0/03e952b51391a41ac77ef860a1138e6e8c22d457ecd27b0e4db8393fb43a320a265f5c9768f76964a19dabe18c5d099c026eaaa75a0d20389d2f19a904fccd79
+  languageName: node
+  linkType: hard
+
 "require-directory@npm:^2.1.1":
   version: 2.1.1
   resolution: "require-directory@npm:2.1.1"
@@ -1205,6 +1308,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"sha3@npm:^2.1.4":
+  version: 2.1.4
+  resolution: "sha3@npm:2.1.4"
+  dependencies:
+    buffer: "npm:6.0.3"
+  checksum: 10c0/d3c1542e30977c421957e87ceca699931dfca3f61e9f25d407efb3fd0dfdfa3eb274342bd905b46d4d862eeb741dd168c9a43a36b068436d63b818471be33e94
+  languageName: node
+  linkType: hard
+
 "shebang-command@npm:^2.0.0":
   version: 2.0.0
   resolution: "shebang-command@npm:2.0.0"
@@ -1242,6 +1354,15 @@ __metadata:
     ansi-styles: "npm:^6.0.0"
     is-fullwidth-code-point: "npm:^4.0.0"
   checksum: 10c0/2d4d40b2a9d5cf4e8caae3f698fe24ae31a4d778701724f578e984dcb485ec8c49f0c04dab59c401821e80fcdfe89cace9c66693b0244e40ec485d72e543914f
+  languageName: node
+  linkType: hard
+
+"sodium-native@npm:^4.0.1":
+  version: 4.3.3
+  resolution: "sodium-native@npm:4.3.3"
+  dependencies:
+    require-addon: "npm:^1.1.0"
+  checksum: 10c0/2024924fd2f22409783f25c9932387fcec8d5c8fe0ade5a734ca408232b03d7af44ed06d7db6860fe088ae77e63659a85e095786a1f49de9018e182ce285c838
   languageName: node
   linkType: hard
 
@@ -1361,6 +1482,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"torv3@npm:^1.2.4":
+  version: 1.2.4
+  resolution: "torv3@npm:1.2.4"
+  dependencies:
+    hi-base32: "npm:^0.5.1"
+    sha3: "npm:^2.1.4"
+    sodium-native: "npm:^4.0.1"
+    yargs: "npm:^17.7.1"
+  bin:
+    torv3: build/index.js
+  checksum: 10c0/dd7163d6f0c0f4cd2216b9cfb7aed88c79225f966dc9b25ea668946d9be77c5de0eb46dc9cd98b3d68390202426cd08faa354f90c0ae37e4d662ba60455b5e5f
+  languageName: node
+  linkType: hard
+
 "tr46@npm:~0.0.3":
   version: 0.0.3
   resolution: "tr46@npm:0.0.3"
@@ -1477,7 +1612,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"yargs@npm:^17.7.2":
+"yargs@npm:^17.7.1, yargs@npm:^17.7.2":
   version: 17.7.2
   resolution: "yargs@npm:17.7.2"
   dependencies:
