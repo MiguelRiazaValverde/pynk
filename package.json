@@ -12,6 +12,10 @@
     "network",
     "net"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MiguelRiazaValverde/pynk.git"
+  },
   "main": "index.js",
   "types": "index.d.ts",
   "napi": {
