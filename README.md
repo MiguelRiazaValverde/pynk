@@ -52,8 +52,8 @@ const {
   TorClientBuilder,
   TorClientConfig,
   OnionServiceConfig,
+  OnionV3,
 } = require("@pynk/pynk");
-const { generateOnionV3 } = require("torv3"); // for generating keys
 
 (async () => {
   // Configure the Tor client with temporary storage
@@ -72,10 +72,10 @@ const { generateOnionV3 } = require("torv3"); // for generating keys
   config.nickname("my-hidden-service");
 
   // Generate ed25519 keys for the .onion service
-  const keys = generateOnionV3();
+  const keys = new OnionV3();
 
   // Create the hidden service using the private key
-  const service = client.createOnionServiceWithKey(config, keys.privateKey);
+  const service = client.createOnionServiceWithKey(config, keys.getSecret());
   console.log("Hidden service address:", service.address());
 
   // Wait for an incoming connection and establish a stream

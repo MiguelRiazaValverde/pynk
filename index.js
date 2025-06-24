@@ -310,7 +310,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { TorClient, TorClientBuilder, ConfigCircuitTiming, ConfigDirectoryTolerance, ConfigDownloadSchedule, ConfigNetParams, ConfigPathRules, ConfigPreemptiveCircuits, ConfigStorage, ConfigStreamTimeouts, PaddingLevel, TorClientConfig, OnionServiceConfig, RendRequest, OnionService, StreamRequest, StreamsRequest, TorStream, StreamPrefs } = nativeBinding
+const { TorClient, TorClientBuilder, ConfigCircuitTiming, ConfigDirectoryTolerance, ConfigDownloadSchedule, ConfigNetParams, ConfigPathRules, ConfigPreemptiveCircuits, ConfigStorage, ConfigStreamTimeouts, PaddingLevel, TorClientConfig, OnionServiceConfig, OnionV3, RendRequest, OnionService, StreamRequest, StreamsRequest, TorStream, StreamPrefs } = nativeBinding
 
 module.exports.TorClient = TorClient
 module.exports.TorClientBuilder = TorClientBuilder
@@ -325,6 +325,7 @@ module.exports.ConfigStreamTimeouts = ConfigStreamTimeouts
 module.exports.PaddingLevel = PaddingLevel
 module.exports.TorClientConfig = TorClientConfig
 module.exports.OnionServiceConfig = OnionServiceConfig
+module.exports.OnionV3 = OnionV3
 module.exports.RendRequest = RendRequest
 module.exports.OnionService = OnionService
 module.exports.StreamRequest = StreamRequest

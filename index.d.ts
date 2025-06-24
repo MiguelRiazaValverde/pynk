@@ -271,6 +271,45 @@ export declare class OnionServiceConfig {
   */
   nickname(nickname: string): void
 }
+export type NativeOnionV3 = OnionV3
+export declare class OnionV3 {
+  address: string
+  /**
+  * Creates a new Onion v3 address with a randomly generated private key.
+  */
+  constructor()
+  /**
+  * Generates a vanity Onion v3 address synchronously that starts with the given prefix.
+  * Loops until a matching address is found, counting the number of attempts in `steps`.
+  */
+  static generateVanity(prefix: string): OnionV3
+  /**
+  * Creates a new Onion v3 address with a randomly generated secret key.
+  */
+  static create(): OnionV3
+  /**
+  * Asynchronously generates a vanity Onion v3 address with the specified prefix.
+  * Yields execution every `stopEach` attempts to avoid blocking the async runtime.
+  */
+  static generateVanityAsync(prefix: string, stopEach?: number | undefined | null): Promise<OnionV3>
+  /**
+  * Creates an Onion v3 instance from a 32-byte secret key buffer.
+  * Returns an error if the buffer length is invalid.
+  */
+  static fromSecret(privateKey: Buffer): OnionV3
+  /**
+  * Returns the secret key as a Buffer.
+  */
+  getSecret(): Buffer
+  /**
+  * Returns the public key as a Buffer.
+  */
+  getPublic(): Buffer
+  /**
+  * Number of steps taken during vanity address generation.
+  */
+  get steps(): number
+}
 export type NativeRendRequest = RendRequest
 export declare class RendRequest {
   /**

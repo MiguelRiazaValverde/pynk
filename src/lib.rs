@@ -4,6 +4,7 @@ mod client;
 mod client_builder;
 mod config;
 mod hs_config;
+mod hs_onion_v3;
 mod hs_service;
 mod hs_streams_request;
 mod stream;

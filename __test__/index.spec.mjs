@@ -3,10 +3,9 @@ import test from 'ava';
 import * as pathNode from 'path';
 import fs from 'fs/promises';
 import http from 'http';
-import { TorClient, TorClientBuilder, TorClientConfig } from '../index.js';
+import { OnionV3, TorClient, TorClientBuilder, TorClientConfig } from '../index.js';
 import { OnionServiceConfig } from '../index.js';
 import { TorStream } from '../index.js';
-import { generateKeys, generateOnionV3 } from 'torv3';
 
 /**
  * Parse a raw HTTP response buffer into status, headers, and body.
@@ -131,8 +130,8 @@ test('Hidden service', async t => {
   const config = OnionServiceConfig.create();
   config.nickname(`nickname-${Math.floor(Math.random() * 10000)}`);
 
-  const keys = generateOnionV3();
-  const service = client.createOnionServiceWithKey(config, keys.privateKey);
+  const keys = new OnionV3();
+  const service = client.createOnionServiceWithKey(config, keys.getSecret());
 
   const [serverStream, clientStream] = await Promise.all([
     service.poll().then(async rendRequest => {
@@ -147,4 +146,23 @@ test('Hidden service', async t => {
   t.is(service.address(), keys.address, "service address should match expected onion URL");
   t.truthy(serverStream instanceof TorStream, "serverStream should be an instance of TorStream");
   t.truthy(clientStream instanceof TorStream, "clientStream should be an instance of TorStream");
+});
+
+test('Onion v3', async t => {
+  const dir = new OnionV3();
+  t.true(dir.address.endsWith('.onion'), 'Address should end with .onion');
+  t.is(dir.getSecret().length, 32, 'Private key buffer should be 32 bytes');
+  t.is(dir.getPublic().length, 32, 'Public key buffer should be 32 bytes');
+
+  const prefix = 'pynk';
+  const dirAsync = await OnionV3.generateVanityAsync(prefix);
+
+  t.true(dirAsync.address.startsWith(prefix), `Vanity address should start with '${prefix}'`);
+  t.true(dirAsync.address.endsWith('.onion'), 'Address should end with .onion');
+
+  const dirFromPrivate = OnionV3.fromSecret(dirAsync.getSecret());
+
+  t.deepEqual(dirAsync.getSecret(), dirFromPrivate.getSecret(), 'Private keys should match');
+  t.deepEqual(dirAsync.getPublic(), dirFromPrivate.getPublic(), 'Public keys should match');
+  t.is(dirAsync.address, dirFromPrivate.address, 'Addresses should match');
 });
