@@ -273,12 +273,18 @@ export declare class OnionServiceConfig {
 }
 export type NativeRendRequest = RendRequest
 export declare class RendRequest {
+  /**
+  * This class cannot be constructed manually.
+  */
   constructor()
   accept(): Promise<NativeStreamsRequest | null>
   reject(): Promise<void>
 }
 export type NativeOnionService = OnionService
 export declare class OnionService {
+  /**
+  * This class cannot be constructed manually.
+  */
   constructor()
   /**
   * Retrieves the next RendRequest in the queue.
@@ -293,6 +299,9 @@ export declare class OnionService {
 }
 export type NativeStreamRequest = StreamRequest
 export declare class StreamRequest {
+  /**
+  * This class cannot be constructed manually.
+  */
   constructor()
   /**
   * Accept this request and send the client a CONNECTED message.
@@ -306,6 +315,9 @@ export declare class StreamRequest {
 }
 export type NativeStreamsRequest = StreamsRequest
 export declare class StreamsRequest {
+  /**
+  * This class cannot be constructed manually.
+  */
   constructor()
   /**
   * Retrieves the next StreamRequest in the queue.
@@ -314,6 +326,9 @@ export declare class StreamsRequest {
 }
 export type NativeTorStream = TorStream
 export declare class TorStream {
+  /**
+  * This class cannot be constructed manually.
+  */
   constructor()
   /**
   * Wait until a CONNECTED cell is received, or some other cell is received to indicate an error.

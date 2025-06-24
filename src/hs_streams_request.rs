@@ -16,6 +16,9 @@ pub struct NativeStreamRequest {
 
 #[napi]
 impl NativeStreamRequest {
+  /**
+   * This class cannot be constructed manually.
+   */
   #[napi(constructor)]
   pub fn new() -> napi::Result<Self> {
     Err(napi::Error::new(
@@ -66,6 +69,9 @@ unsafe impl Sync for NativeStreamsRequest {}
 
 #[napi]
 impl NativeStreamsRequest {
+  /**
+   * This class cannot be constructed manually.
+   */
   #[napi(constructor)]
   pub fn new() -> napi::Result<Self> {
     Err(napi::Error::new(

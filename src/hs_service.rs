@@ -15,6 +15,9 @@ pub struct NativeRendRequest {
 
 #[napi]
 impl NativeRendRequest {
+  /**
+   * This class cannot be constructed manually.
+   */
   #[napi(constructor)]
   pub fn new() -> napi::Result<Self> {
     Err(napi::Error::new(
@@ -60,6 +63,9 @@ pub struct NativeOnionService {
 
 #[napi]
 impl NativeOnionService {
+  /**
+   * This class cannot be constructed manually.
+   */
   #[napi(constructor)]
   pub fn new() -> napi::Result<Self> {
     Err(napi::Error::new(

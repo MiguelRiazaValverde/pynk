@@ -12,6 +12,9 @@ pub struct NativeTorStream {
 
 #[napi]
 impl NativeTorStream {
+  /**
+   * This class cannot be constructed manually.
+   */
   #[napi(constructor)]
   pub fn new() -> napi::Result<NativeTorStream> {
     Err(napi::Error::new(
