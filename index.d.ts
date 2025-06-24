@@ -277,7 +277,13 @@ export declare class RendRequest {
   * This class cannot be constructed manually.
   */
   constructor()
+  /**
+  * Mark this request as accepted, and try to connect to the client's provided rendezvous point.
+  */
   accept(): Promise<NativeStreamsRequest | null>
+  /**
+  * Reject this request. (The client will receive no notification.)
+  */
   reject(): Promise<void>
 }
 export type NativeOnionService = OnionService
@@ -304,6 +310,23 @@ export declare class StreamRequest {
   */
   constructor()
   /**
+  * Returns whether the current incoming stream request is a `Begin` request.
+  * This indicates the start of a new incoming stream.
+  */
+  isBegin(): boolean
+  /**
+  * Returns the destination address for the incoming `Begin` stream request.
+  * If the current request is a `Begin` request, returns the address as a byte vector.
+  * Otherwise, returns `null|undefined`.
+  */
+  addr(): Array<number> | null
+  /**
+  * Returns the destination port for the incoming `Begin` stream request.
+  * If the current request is a `Begin` request, returns the port number.
+  * Otherwise, returns `None`.
+  */
+  port(): number | null
+  /**
   * Accept this request and send the client a CONNECTED message.
   * Returns a TorStream.
   */
@@ -312,6 +335,10 @@ export declare class StreamRequest {
   * Reject this request, and send the client an END message.
   */
   reject(): Promise<void>
+  /**
+  * Reject this request and close the rendezvous circuit entirely, along with all other streams attached to the circuit.
+  */
+  shutdownCircuit(): Promise<void>
 }
 export type NativeStreamsRequest = StreamsRequest
 export declare class StreamsRequest {

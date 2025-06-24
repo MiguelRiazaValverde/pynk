@@ -5,6 +5,7 @@ use futures_util::lock::Mutex;
 use futures_util::StreamExt;
 use tor_cell::relaycell::msg::{Connected, End, EndReason};
 use tor_hsservice::StreamRequest;
+use tor_proto::stream::IncomingStreamRequest;
 
 use crate::stream::NativeTorStream;
 use crate::utils;
@@ -31,6 +32,51 @@ impl NativeStreamRequest {
     Self {
       request: Some(request),
     }
+  }
+
+  /**
+   * Returns whether the current incoming stream request is a `Begin` request.
+   * This indicates the start of a new incoming stream.
+   */
+  #[napi]
+  pub fn is_begin(&self) -> bool {
+    self
+      .request
+      .as_ref()
+      .map(|request| matches!(request.request(), IncomingStreamRequest::Begin(_)))
+      .unwrap_or_default()
+  }
+
+  /**
+   * Returns the destination address for the incoming `Begin` stream request.
+   * If the current request is a `Begin` request, returns the address as a byte vector.
+   * Otherwise, returns `null|undefined`.
+   */
+  #[napi]
+  pub fn addr(&self) -> Option<Vec<u8>> {
+    self
+      .request
+      .as_ref()
+      .and_then(|request| match request.request() {
+        IncomingStreamRequest::Begin(begin) => Some(begin.addr().to_vec()),
+        _ => None,
+      })
+  }
+
+  /**
+   * Returns the destination port for the incoming `Begin` stream request.
+   * If the current request is a `Begin` request, returns the port number.
+   * Otherwise, returns `None`.
+   */
+  #[napi]
+  pub fn port(&self) -> Option<u16> {
+    self
+      .request
+      .as_ref()
+      .and_then(|request| match request.request() {
+        IncomingStreamRequest::Begin(begin) => Some(begin.port()),
+        _ => None,
+      })
   }
 
   /**
