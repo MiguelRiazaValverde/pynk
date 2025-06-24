@@ -32,6 +32,9 @@ impl NativeRendRequest {
     }
   }
 
+  /**
+   * Mark this request as accepted, and try to connect to the client's provided rendezvous point.
+   */
   #[napi]
   pub async unsafe fn accept(&mut self) -> napi::Result<Option<NativeStreamsRequest>> {
     if let Some(request) = self.request.take() {
@@ -44,6 +47,9 @@ impl NativeRendRequest {
     }
   }
 
+  /**
+   * Reject this request. (The client will receive no notification.)
+   */
   #[napi]
   pub async unsafe fn reject(&mut self) -> napi::Result<()> {
     if let Some(request) = self.request.take() {

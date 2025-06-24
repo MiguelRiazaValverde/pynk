@@ -57,6 +57,17 @@ impl NativeStreamRequest {
     }
     Ok(())
   }
+
+  /**
+   * Reject this request and close the rendezvous circuit entirely, along with all other streams attached to the circuit.
+   */
+  #[napi]
+  pub async unsafe fn shutdown_circuit(&mut self) -> napi::Result<()> {
+    if let Some(request) = self.request.take() {
+      utils::map_error(request.shutdown_circuit())?;
+    }
+    Ok(())
+  }
 }
 
 #[napi(js_name = "StreamsRequest")]
