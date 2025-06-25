@@ -2,7 +2,10 @@ use std::sync::Arc;
 
 use futures_core::Stream;
 use futures_util::stream::StreamExt;
+use napi::bindgen_prelude::ObjectFinalize;
 use napi::tokio::sync::Mutex;
+use tokio::runtime::Runtime;
+use tokio_util::sync::CancellationToken;
 use tor_hsservice::{RendRequest, RunningOnionService};
 
 use crate::hs_streams_request::NativeStreamsRequest;
@@ -61,10 +64,11 @@ impl NativeRendRequest {
   }
 }
 
-#[napi(js_name = "OnionService")]
+#[napi(js_name = "OnionService", custom_finalize)]
 pub struct NativeOnionService {
-  service: Arc<RunningOnionService>,
-  rend_request: Arc<Mutex<Box<dyn Stream<Item = RendRequest> + Unpin + Send>>>,
+  service: Option<Arc<RunningOnionService>>,
+  rend_request: Arc<Mutex<Option<Box<dyn Stream<Item = RendRequest> + Unpin + Send>>>>,
+  cancel_token: CancellationToken,
 }
 
 #[napi]
@@ -85,8 +89,9 @@ impl NativeOnionService {
     rend_request: impl Stream<Item = RendRequest> + Send + Unpin + 'static,
   ) -> Self {
     Self {
-      service,
-      rend_request: Arc::new(Mutex::new(Box::new(rend_request))),
+      service: Some(service),
+      rend_request: Arc::new(Mutex::new(Some(Box::new(rend_request)))),
+      cancel_token: CancellationToken::new(),
     }
   }
 
@@ -94,14 +99,28 @@ impl NativeOnionService {
    * Retrieves the next RendRequest in the queue.
    */
   #[napi]
-  pub async fn poll(&self) -> Option<NativeRendRequest> {
-    self
-      .rend_request
-      .lock()
-      .await
-      .next()
-      .await
-      .map(NativeRendRequest::from_rend_request)
+  pub async fn poll(&self) -> napi::Result<NativeRendRequest> {
+    let token = self.cancel_token.clone();
+
+    let fut = async {
+      let mut rend_request = self.rend_request.lock().await;
+      if let Some(rend_request) = rend_request.as_mut() {
+        rend_request
+          .next()
+          .await
+          .map(NativeRendRequest::from_rend_request)
+          .ok_or(napi::Error::from_reason("Hidden service was closed"))
+      } else {
+        Err(napi::Error::from_reason("Hidden service was closed"))
+      }
+    };
+
+    tokio::select! {
+      biased;
+
+      _ = token.cancelled() => Err(napi::Error::from_reason("Hidden service was closed")),
+      result = fut => utils::map_error(result)
+    }
   }
 
   /**
@@ -113,7 +132,25 @@ impl NativeOnionService {
   pub fn address(&self) -> Option<String> {
     self
       .service
-      .onion_address()
-      .map(|address| address.to_string())
+      .as_ref()
+      .and_then(|service| service.onion_address().map(|address| address.to_string()))
+  }
+
+  /**
+   * Close the hidden service.
+   */
+  #[napi]
+  pub fn close(&mut self) {
+    self.cancel_token.cancel();
+    self.service.take();
+    let runtime = Runtime::new().unwrap();
+    runtime.block_on(async { self.rend_request.lock().await.take() });
+  }
+}
+
+impl ObjectFinalize for NativeOnionService {
+  fn finalize(mut self, _env: napi::Env) -> napi::Result<()> {
+    self.close();
+    Ok(())
   }
 }

@@ -334,13 +334,14 @@ export declare class OnionService {
   /**
   * Retrieves the next RendRequest in the queue.
   */
-  poll(): Promise<RendRequest | null>
+  poll(): Promise<RendRequest>
   /**
   * Return the onion address of this service.
   * Clients must know the service's onion address in order to discover or connect to it.
   * Returns `null|undefined` if the HsId of the service could not be found in any of the configured keystores.
   */
   address(): string | null
+  close(): void
 }
 export type NativeStreamRequest = StreamRequest
 export declare class StreamRequest {

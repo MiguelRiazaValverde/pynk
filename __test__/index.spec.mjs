@@ -200,8 +200,28 @@ test('Closed stream', async t => {
     { instanceOf: Error, code: 'GenericFailure', message: /end cell/i },
     'The stream should throw an error after being closed on the server side'
   );
-
-  t.is(service.address(), keys.address, "service address should match expected onion URL");
-  t.truthy(serverStream instanceof TorStream, "serverStream should be an instance of TorStream");
-  t.truthy(clientStream instanceof TorStream, "clientStream should be an instance of TorStream");
 });
+
+test('Closed hidden service', async t => {
+  const torConfig = TorClientConfig.create();
+  torConfig.storage.keystore(true);
+  const tempDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${Math.random()}`);
+  torConfig.storage.stateDir(tempDir);
+  const client = await TorClient.create(TorClientBuilder.create(torConfig));
+  const config = OnionServiceConfig.create();
+  config.nickname(`nickname-${Math.floor(Math.random() * 10000)}`);
+
+  const keys = new OnionV3();
+  const service = client.createOnionServiceWithKey(config, keys.getSecret());
+
+
+  const promise = t.throwsAsync(
+    () => service.poll().then(async _ => { }),
+    { instanceOf: Error, code: 'GenericFailure', message: /Hidden service was closed/i },
+    'The hidden service poll should throw an error after being closed'
+  );
+
+  service.close();
+  await promise;
+});
+

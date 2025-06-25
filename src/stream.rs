@@ -75,8 +75,7 @@ impl NativeTorStream {
   #[napi]
   pub async unsafe fn flush(&mut self) -> napi::Result<()> {
     if let Some(stream) = &mut self.stream {
-      utils::map_error(stream.flush().await)?;
-      Ok(())
+      utils::map_error(stream.flush().await)
     } else {
       Err(napi::Error::from_reason("Stream was closed"))
     }
