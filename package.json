@@ -1,7 +1,7 @@
 {
   "name": "@pynk/pynk",
   "description": "Basic low-level package to launch Tor from Node.js using arti-client, no need to have Tor installed.",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "keywords": [
     "tor",
     "arti",
