@@ -8,6 +8,16 @@ export const enum PaddingLevel {
   Reduced = 1,
   Normal = 2
 }
+export const enum StateOnionService {
+  Shutdown = 0,
+  Bootstrapping = 1,
+  DegradedReachable = 2,
+  DegradedUnreachable = 3,
+  Running = 4,
+  Recovering = 5,
+  Broken = 6,
+  Unknown = 7
+}
 export type NativeTorClient = TorClient
 export declare class TorClient {
   /**
@@ -332,6 +342,12 @@ export declare class OnionService {
   */
   constructor()
   /**
+  * Waits until the hidden service reaches the `Running` state.
+  * If `maxTime` is provided, throws an error if the timeout is exceeded.
+  * If the service enters the `Broken` state, throws an error immediately.
+  */
+  waitRunning(maxTime?: number | undefined | null): Promise<void>
+  /**
   * Retrieves the next RendRequest in the queue.
   */
   poll(): Promise<RendRequest>
@@ -341,6 +357,13 @@ export declare class OnionService {
   * Returns `null|undefined` if the HsId of the service could not be found in any of the configured keystores.
   */
   address(): string | null
+  /**
+  * Returns the current status of the hidden service.
+  */
+  state(): StateOnionService
+  /**
+  * Close the hidden service.
+  */
   close(): void
 }
 export type NativeStreamRequest = StreamRequest

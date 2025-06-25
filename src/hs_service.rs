@@ -96,6 +96,38 @@ impl NativeOnionService {
   }
 
   /**
+   * Waits until the hidden service reaches the `Running` state.
+   * If `maxTime` is provided, throws an error if the timeout is exceeded.
+   * If the service enters the `Broken` state, throws an error immediately.
+   */
+  #[napi]
+  pub async fn wait_running(&self, max_time: Option<u32>) -> napi::Result<()> {
+    use tokio::time::{sleep, Duration, Instant};
+
+    let deadline = max_time.map(|ms| Instant::now() + Duration::from_millis(ms as u64));
+
+    loop {
+      match self.state() {
+        StateOnionService::Running => return Ok(()),
+        StateOnionService::Broken => {
+          return Err(napi::Error::from_reason("Hidden service broken"));
+        }
+        _ => {
+          if let Some(d) = deadline {
+            if Instant::now() >= d {
+              return Err(napi::Error::from_reason(
+                "Timed out waiting for hidden service to start",
+              ));
+            }
+          }
+
+          sleep(Duration::from_millis(500)).await;
+        }
+      }
+    }
+  }
+
+  /**
    * Retrieves the next RendRequest in the queue.
    */
   #[napi]
@@ -137,6 +169,27 @@ impl NativeOnionService {
   }
 
   /**
+   * Returns the current status of the hidden service.
+   */
+  #[napi]
+  pub fn state(&self) -> StateOnionService {
+    self
+      .service
+      .as_ref()
+      .map(|service| match service.status().state() {
+        tor_hsservice::status::State::Shutdown => StateOnionService::Shutdown,
+        tor_hsservice::status::State::Bootstrapping => StateOnionService::Bootstrapping,
+        tor_hsservice::status::State::DegradedReachable => StateOnionService::DegradedReachable,
+        tor_hsservice::status::State::DegradedUnreachable => StateOnionService::DegradedUnreachable,
+        tor_hsservice::status::State::Running => StateOnionService::Running,
+        tor_hsservice::status::State::Recovering => StateOnionService::Recovering,
+        tor_hsservice::status::State::Broken => StateOnionService::Broken,
+        _ => StateOnionService::Unknown,
+      })
+      .unwrap_or(StateOnionService::Shutdown)
+  }
+
+  /**
    * Close the hidden service.
    */
   #[napi]
@@ -153,4 +206,16 @@ impl ObjectFinalize for NativeOnionService {
     self.close();
     Ok(())
   }
+}
+
+#[napi]
+pub enum StateOnionService {
+  Shutdown,
+  Bootstrapping,
+  DegradedReachable,
+  DegradedUnreachable,
+  Running,
+  Recovering,
+  Broken,
+  Unknown,
 }

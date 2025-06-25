@@ -3,9 +3,14 @@ import test from 'ava';
 import * as pathNode from 'path';
 import fs from 'fs/promises';
 import http from 'http';
-import { OnionV3, TorClient, TorClientBuilder, TorClientConfig } from '../index.js';
+import { OnionV3, StateOnionService, TorClient, TorClientBuilder, TorClientConfig } from '../index.js';
 import { OnionServiceConfig } from '../index.js';
 import { TorStream } from '../index.js';
+
+
+function wait(millis) {
+  return new Promise(solve => setTimeout(solve, millis));
+}
 
 /**
  * Parse a raw HTTP response buffer into status, headers, and body.
@@ -132,6 +137,7 @@ test('Hidden service', async t => {
 
   const keys = new OnionV3();
   const service = client.createOnionServiceWithKey(config, keys.getSecret());
+  await service.waitRunning();
 
   const [serverStream, clientStream] = await Promise.all([
     service.poll().then(async rendRequest => {
@@ -178,6 +184,7 @@ test('Closed stream', async t => {
 
   const keys = new OnionV3();
   const service = client.createOnionServiceWithKey(config, keys.getSecret());
+  await service.waitRunning();
 
   const [serverStream, clientStream] = await Promise.all([
     service.poll().then(async rendRequest => {
@@ -213,7 +220,7 @@ test('Closed hidden service', async t => {
 
   const keys = new OnionV3();
   const service = client.createOnionServiceWithKey(config, keys.getSecret());
-
+  await service.waitRunning();
 
   const promise = t.throwsAsync(
     () => service.poll().then(async _ => { }),
@@ -224,4 +231,3 @@ test('Closed hidden service', async t => {
   service.close();
   await promise;
 });
-
