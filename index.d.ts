@@ -431,7 +431,7 @@ export declare class TorStream {
   /**
   * Close the stream.
   */
-  close(): Promise<void>
+  close(): void
 }
 export type NativeStreamPrefs = StreamPrefs
 export declare class StreamPrefs {

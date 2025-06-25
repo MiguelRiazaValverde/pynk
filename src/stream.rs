@@ -1,13 +1,16 @@
 use arti_client::DataStream;
 use napi::bindgen_prelude::Buffer;
+use napi::bindgen_prelude::ObjectFinalize;
 use napi::tokio::io::AsyncReadExt;
 use napi::tokio::io::AsyncWriteExt;
+use tokio_util::sync::CancellationToken;
 
 use crate::utils;
 
-#[napi(js_name = "TorStream")]
+#[napi(js_name = "TorStream", custom_finalize)]
 pub struct NativeTorStream {
   stream: Option<DataStream>,
+  cancel_token: CancellationToken,
 }
 
 #[napi]
@@ -26,6 +29,7 @@ impl NativeTorStream {
   pub fn from_stream(stream: DataStream) -> Self {
     Self {
       stream: Some(stream),
+      cancel_token: CancellationToken::new(),
     }
   }
 
@@ -36,9 +40,10 @@ impl NativeTorStream {
   #[napi]
   pub async unsafe fn wait_for_connection(&mut self) -> napi::Result<()> {
     if let Some(stream) = &mut self.stream {
-      utils::map_error(stream.wait_for_connection().await)?;
+      utils::map_error(stream.wait_for_connection().await)
+    } else {
+      Err(napi::Error::from_reason("Stream was closed"))
     }
-    Ok(())
   }
 
   /**
@@ -58,9 +63,10 @@ impl NativeTorStream {
   #[napi]
   pub async unsafe fn write(&mut self, src: Buffer) -> napi::Result<()> {
     if let Some(stream) = &mut self.stream {
-      utils::map_error(stream.write_all(&src).await)?;
+      utils::map_error(stream.write_all(&src).await)
+    } else {
+      Err(napi::Error::from_reason("Stream was closed"))
     }
-    Ok(())
   }
 
   /**
@@ -70,8 +76,10 @@ impl NativeTorStream {
   pub async unsafe fn flush(&mut self) -> napi::Result<()> {
     if let Some(stream) = &mut self.stream {
       utils::map_error(stream.flush().await)?;
+      Ok(())
+    } else {
+      Err(napi::Error::from_reason("Stream was closed"))
     }
-    Ok(())
   }
 
   /**
@@ -79,22 +87,43 @@ impl NativeTorStream {
    */
   #[napi]
   pub async unsafe fn read(&mut self, len: u32) -> napi::Result<Buffer> {
-    let buf = if let Some(stream) = &mut self.stream {
-      let mut buf = vec![0u8; len as usize];
-      let n = utils::map_error(stream.read(&mut buf).await)?;
-      buf.truncate(n);
-      buf
-    } else {
-      vec![]
+    let token = self.cancel_token.clone();
+
+    let read_fut = async {
+      if let Some(stream) = &mut self.stream {
+        let mut buf = vec![0u8; len as usize];
+        let n = utils::map_error(stream.read(&mut buf).await)?;
+        buf.truncate(n);
+        Ok(Buffer::from(buf))
+      } else {
+        Ok(Buffer::from(vec![]))
+      }
     };
-    Ok(Buffer::from(buf))
+
+    tokio::select! {
+      biased;
+
+      _ = token.cancelled() => {
+        Err(napi::Error::from_reason("Stream was closed during read"))
+      }
+
+      result = read_fut => result
+    }
   }
 
   /**
    * Close the stream.
    */
   #[napi]
-  pub async unsafe fn close(&mut self) {
+  pub unsafe fn close(&mut self) {
     self.stream.take();
+    self.cancel_token.cancel();
+  }
+}
+
+impl ObjectFinalize for NativeTorStream {
+  fn finalize(mut self, _env: napi::Env) -> napi::Result<()> {
+    unsafe { self.close() };
+    Ok(())
   }
 }

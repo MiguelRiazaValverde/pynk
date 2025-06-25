@@ -166,3 +166,42 @@ test('Onion v3', async t => {
   t.deepEqual(dirAsync.getPublic(), dirFromPrivate.getPublic(), 'Public keys should match');
   t.is(dirAsync.address, dirFromPrivate.address, 'Addresses should match');
 });
+
+test('Closed stream', async t => {
+  const torConfig = TorClientConfig.create();
+  torConfig.storage.keystore(true);
+  const tempDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${Math.random()}`);
+  torConfig.storage.stateDir(tempDir);
+  const client = await TorClient.create(TorClientBuilder.create(torConfig));
+  const config = OnionServiceConfig.create();
+  config.nickname(`nickname-${Math.floor(Math.random() * 10000)}`);
+
+  const keys = new OnionV3();
+  const service = client.createOnionServiceWithKey(config, keys.getSecret());
+
+  const [serverStream, clientStream] = await Promise.all([
+    service.poll().then(async rendRequest => {
+      const streams = await rendRequest.accept();
+      const streamRequest = await streams.poll();
+      const stream = await streamRequest.accept();
+      return stream;
+    }),
+    client.connect(service.address() + ":80")
+  ]);
+
+  await serverStream.write(Buffer.from("Hello!"));
+  await serverStream.flush();
+  await clientStream.read(4096);
+
+  serverStream.close();
+
+  await t.throwsAsync(
+    () => clientStream.read(4096),
+    { instanceOf: Error, code: 'GenericFailure', message: /end cell/i },
+    'The stream should throw an error after being closed on the server side'
+  );
+
+  t.is(service.address(), keys.address, "service address should match expected onion URL");
+  t.truthy(serverStream instanceof TorStream, "serverStream should be an instance of TorStream");
+  t.truthy(clientStream instanceof TorStream, "clientStream should be an instance of TorStream");
+});
