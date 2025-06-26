@@ -14,6 +14,7 @@ use crate::utils;
 #[napi(js_name = "RendRequest")]
 pub struct NativeRendRequest {
   request: Option<RendRequest>,
+  cancel_token: CancellationToken,
 }
 
 #[napi]
@@ -29,9 +30,10 @@ impl NativeRendRequest {
     ))
   }
 
-  pub fn from_rend_request(request: RendRequest) -> Self {
+  pub fn from_rend_request(request: RendRequest, cancel_token: CancellationToken) -> Self {
     Self {
       request: Some(request),
+      cancel_token,
     }
   }
 
@@ -44,6 +46,7 @@ impl NativeRendRequest {
       let streams_request = utils::map_error(request.accept().await)?;
       Ok(Some(NativeStreamsRequest::from_streams_request(
         streams_request,
+        self.cancel_token.clone(),
       )))
     } else {
       Ok(None)
@@ -140,7 +143,9 @@ impl NativeOnionService {
         rend_request
           .next()
           .await
-          .map(NativeRendRequest::from_rend_request)
+          .map(|rend_request| {
+            NativeRendRequest::from_rend_request(rend_request, self.cancel_token.clone())
+          })
           .ok_or(napi::Error::from_reason("Hidden service was closed"))
       } else {
         Err(napi::Error::from_reason("Hidden service was closed"))

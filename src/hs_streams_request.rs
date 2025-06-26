@@ -3,6 +3,7 @@ use std::sync::Arc;
 use futures_core::Stream;
 use futures_util::lock::Mutex;
 use futures_util::StreamExt;
+use tokio_util::sync::CancellationToken;
 use tor_cell::relaycell::msg::{Connected, End, EndReason};
 use tor_hsservice::StreamRequest;
 use tor_proto::stream::IncomingStreamRequest;
@@ -119,6 +120,7 @@ impl NativeStreamRequest {
 #[napi(js_name = "StreamsRequest")]
 pub struct NativeStreamsRequest {
   streams_request: Arc<Mutex<Box<dyn Stream<Item = StreamRequest> + Send + Unpin + 'static>>>,
+  cancel_token: CancellationToken,
 }
 
 unsafe impl Send for NativeStreamsRequest {}
@@ -139,9 +141,11 @@ impl NativeStreamsRequest {
 
   pub fn from_streams_request(
     streams_request: impl Stream<Item = StreamRequest> + Send + Unpin + 'static,
+    cancel_token: CancellationToken,
   ) -> Self {
     Self {
       streams_request: Arc::new(Mutex::new(Box::new(streams_request))),
+      cancel_token,
     }
   }
 
@@ -150,12 +154,19 @@ impl NativeStreamsRequest {
    */
   #[napi]
   pub async unsafe fn poll(&mut self) -> Option<NativeStreamRequest> {
-    self
-      .streams_request
-      .lock()
-      .await
-      .next()
-      .await
-      .map(NativeStreamRequest::from_stream_request)
+    let cancel_token = self.cancel_token.clone();
+    let mut lock = self.streams_request.lock().await;
+
+    tokio::select! {
+      biased;
+
+        _ = cancel_token.cancelled() => {
+            None
+        }
+
+        result = lock.next() => {
+            result.map(NativeStreamRequest::from_stream_request)
+        }
+    }
   }
 }
