@@ -8,8 +8,10 @@ import { OnionServiceConfig } from '../index.js';
 import { TorStream } from '../index.js';
 
 
-function wait(millis) {
-  return new Promise(solve => setTimeout(solve, millis));
+function getTempDir() {
+  const rand = Math.floor(Math.random() * 10000);
+  const tempDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${rand}`);
+  return tempDir;
 }
 
 /**
@@ -129,7 +131,7 @@ test('Tor can access .onion site (DuckDuckGo)', async t => {
 test('Hidden service', async t => {
   const torConfig = TorClientConfig.create();
   torConfig.storage.keystore(true);
-  const tempDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${Math.random()}`);
+  const tempDir = getTempDir();
   torConfig.storage.stateDir(tempDir);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
   const config = OnionServiceConfig.create();
@@ -176,7 +178,7 @@ test('Onion v3', async t => {
 test('Closed stream', async t => {
   const torConfig = TorClientConfig.create();
   torConfig.storage.keystore(true);
-  const tempDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${Math.random()}`);
+  const tempDir = getTempDir();
   torConfig.storage.stateDir(tempDir);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
   const config = OnionServiceConfig.create();
@@ -212,7 +214,7 @@ test('Closed stream', async t => {
 test('Closed hidden service', async t => {
   const torConfig = TorClientConfig.create();
   torConfig.storage.keystore(true);
-  const tempDir = pathNode.join(os.tmpdir(), `pynk-${Date.now()}-${Math.random()}`);
+  const tempDir = getTempDir();
   torConfig.storage.stateDir(tempDir);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
   const config = OnionServiceConfig.create();
