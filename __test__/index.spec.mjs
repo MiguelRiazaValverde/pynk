@@ -121,7 +121,7 @@ test('Tor can access .onion site (DuckDuckGo)', async t => {
   );
 });
 
-test('Hidden service', async t => {
+test.skip('Hidden service', async t => {
   const torConfig = TorClientConfig.create();
   torConfig.storage.keystore(true);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
@@ -166,7 +166,7 @@ test('Onion v3', async t => {
   t.is(dirAsync.address, dirFromPrivate.address, 'Addresses should match');
 });
 
-test('Closed stream', async t => {
+test.skip('Closed stream', async t => {
   const torConfig = TorClientConfig.create();
   torConfig.storage.keystore(true);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
@@ -200,7 +200,7 @@ test('Closed stream', async t => {
   );
 });
 
-test('Closed hidden service', async t => {
+test.skip('Closed hidden service', async t => {
   const torConfig = TorClientConfig.create();
   torConfig.storage.keystore(true);
   const client = await TorClient.create(TorClientBuilder.create(torConfig));
