@@ -3,8 +3,12 @@ use napi::bindgen_prelude::Buffer;
 use napi::bindgen_prelude::ObjectFinalize;
 use napi::tokio::io::AsyncReadExt;
 use napi::tokio::io::AsyncWriteExt;
-use native_tls::TlsConnector as NativeTlsConnector;
-use tokio_native_tls::{TlsConnector, TlsStream};
+use rustls::pki_types::ServerName;
+use rustls::ClientConfig;
+use rustls::RootCertStore;
+use std::sync::Arc;
+use tokio_rustls::TlsConnector;
+use tokio_rustls::TlsStream;
 use tokio_util::sync::CancellationToken;
 
 use crate::utils;
@@ -76,25 +80,24 @@ impl NativeTorStream {
    */
   #[napi]
   pub async unsafe fn enable_tls(&mut self, domain: String) -> napi::Result<()> {
-    let plain_stream = match self.stream.take() {
+    let plain = match self.stream.take() {
       Some(MaybeTlsStream::Plain(s)) => s,
-      Some(MaybeTlsStream::Tls(_)) => {
-        return Err(napi::Error::from_reason("TLS is already enabled"));
-      }
-      None => return Err(napi::Error::from_reason("Stream is closed")),
+      Some(MaybeTlsStream::Tls(_)) => return Err(napi::Error::from_reason("TLS already enabled")),
+      None => return Err(napi::Error::from_reason("Stream closed")),
     };
 
-    let connector = NativeTlsConnector::new()
-      .map_err(|e| napi::Error::from_reason(format!("TLS connector error: {e}")))?;
+    let mut root_cert_store = RootCertStore::empty();
+    root_cert_store.extend(webpki_roots::TLS_SERVER_ROOTS.iter().cloned());
+    let config = ClientConfig::builder()
+      .with_root_certificates(root_cert_store)
+      .with_no_client_auth();
+    let connector = TlsConnector::from(Arc::new(config));
+    let dnsname = ServerName::try_from(domain).unwrap();
 
-    let tls_connector = TlsConnector::from(connector);
+    let stream = connector.connect(dnsname, plain).await?;
+    let stream = TlsStream::Client(stream);
 
-    let tls_stream = tls_connector
-      .connect(&domain, plain_stream)
-      .await
-      .map_err(|e| napi::Error::from_reason(format!("TLS handshake failed: {e}")))?;
-
-    self.stream = Some(MaybeTlsStream::Tls(Box::new(tls_stream)));
+    self.stream = Some(MaybeTlsStream::Tls(Box::new(stream)));
     Ok(())
   }
 
