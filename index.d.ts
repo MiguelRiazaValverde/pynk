@@ -421,7 +421,20 @@ export declare class TorStream {
   */
   constructor()
   /**
+  * Upgrade the stream to use TLS.
+  *
+  * This wraps the underlying stream in a TLS layer using the provided domain
+  * (e.g. "httpbin.org") as the server name for certificate verification (SNI).
+  *
+  * **Important:** You must call `waitForConnection()` before invoking this method.
+  * Upgrading to TLS before the Tor stream is fully established will fail.
+  *
+  * @throws If the stream is already upgraded to TLS, or the stream is closed, or TLS handshake fails.
+  */
+  enableTls(domain: string): Promise<void>
+  /**
   * Wait until a CONNECTED cell is received, or some other cell is received to indicate an error.
+  * This must be called before upgrading the stream to TLS using `enableTls()`.
   * Does nothing if this stream is already connected.
   */
   waitForConnection(): Promise<void>

@@ -49,5 +49,13 @@
     "universal": "napi universal",
     "version": "napi version"
   },
-  "packageManager": "yarn@4.9.2"
+  "packageManager": "yarn@4.9.2",
+  "optionalDependencies": {
+    "@pynk/pynk-win32-x64-msvc": "0.3.6",
+    "@pynk/pynk-darwin-x64": "0.3.6",
+    "@pynk/pynk-linux-x64-gnu": "0.3.6",
+    "@pynk/pynk-darwin-arm64": "0.3.6",
+    "@pynk/pynk-linux-arm64-gnu": "0.3.6",
+    "@pynk/pynk-win32-arm64-msvc": "0.3.6"
+  }
 }

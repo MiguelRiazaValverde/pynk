@@ -3,13 +3,43 @@ use napi::bindgen_prelude::Buffer;
 use napi::bindgen_prelude::ObjectFinalize;
 use napi::tokio::io::AsyncReadExt;
 use napi::tokio::io::AsyncWriteExt;
+use native_tls::TlsConnector as NativeTlsConnector;
+use tokio_native_tls::{TlsConnector, TlsStream};
 use tokio_util::sync::CancellationToken;
 
 use crate::utils;
 
+enum MaybeTlsStream {
+  Plain(DataStream),
+  Tls(Box<TlsStream<DataStream>>),
+}
+
+impl MaybeTlsStream {
+  async fn write_all(&mut self, buf: &[u8]) -> std::io::Result<()> {
+    match self {
+      MaybeTlsStream::Plain(s) => s.write_all(buf).await,
+      MaybeTlsStream::Tls(s) => s.write_all(buf).await,
+    }
+  }
+
+  async fn flush(&mut self) -> std::io::Result<()> {
+    match self {
+      MaybeTlsStream::Plain(s) => s.flush().await,
+      MaybeTlsStream::Tls(s) => s.flush().await,
+    }
+  }
+
+  async fn read(&mut self, buf: &mut [u8]) -> std::io::Result<usize> {
+    match self {
+      MaybeTlsStream::Plain(s) => s.read(buf).await,
+      MaybeTlsStream::Tls(s) => s.read(buf).await,
+    }
+  }
+}
+
 #[napi(js_name = "TorStream", custom_finalize)]
 pub struct NativeTorStream {
-  stream: Option<DataStream>,
+  stream: Option<MaybeTlsStream>,
   cancel_token: CancellationToken,
 }
 
@@ -28,18 +58,54 @@ impl NativeTorStream {
 
   pub fn from_stream(stream: DataStream) -> Self {
     Self {
-      stream: Some(stream),
+      stream: Some(MaybeTlsStream::Plain(stream)),
       cancel_token: CancellationToken::new(),
     }
   }
 
   /**
+   * Upgrade the stream to use TLS.
+   *
+   * This wraps the underlying stream in a TLS layer using the provided domain
+   * (e.g. "httpbin.org") as the server name for certificate verification (SNI).
+   *
+   * **Important:** You must call `waitForConnection()` before invoking this method.
+   * Upgrading to TLS before the Tor stream is fully established will fail.
+   *
+   * @throws If the stream is already upgraded to TLS, or the stream is closed, or TLS handshake fails.
+   */
+  #[napi]
+  pub async unsafe fn enable_tls(&mut self, domain: String) -> napi::Result<()> {
+    let plain_stream = match self.stream.take() {
+      Some(MaybeTlsStream::Plain(s)) => s,
+      Some(MaybeTlsStream::Tls(_)) => {
+        return Err(napi::Error::from_reason("TLS is already enabled"));
+      }
+      None => return Err(napi::Error::from_reason("Stream is closed")),
+    };
+
+    let connector = NativeTlsConnector::new()
+      .map_err(|e| napi::Error::from_reason(format!("TLS connector error: {e}")))?;
+
+    let tls_connector = TlsConnector::from(connector);
+
+    let tls_stream = tls_connector
+      .connect(&domain, plain_stream)
+      .await
+      .map_err(|e| napi::Error::from_reason(format!("TLS handshake failed: {e}")))?;
+
+    self.stream = Some(MaybeTlsStream::Tls(Box::new(tls_stream)));
+    Ok(())
+  }
+
+  /**
    * Wait until a CONNECTED cell is received, or some other cell is received to indicate an error.
+   * This must be called before upgrading the stream to TLS using `enableTls()`.
    * Does nothing if this stream is already connected.
    */
   #[napi]
   pub async unsafe fn wait_for_connection(&mut self) -> napi::Result<()> {
-    if let Some(stream) = &mut self.stream {
+    if let Some(MaybeTlsStream::Plain(stream)) = &mut self.stream {
       utils::map_error(stream.wait_for_connection().await)
     } else {
       Err(napi::Error::from_reason("Stream was closed"))
