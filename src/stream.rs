@@ -92,7 +92,7 @@ impl NativeTorStream {
       .with_root_certificates(root_cert_store)
       .with_no_client_auth();
     let connector = TlsConnector::from(Arc::new(config));
-    let dnsname = ServerName::try_from(domain).unwrap();
+    let dnsname = utils::map_error(ServerName::try_from(domain))?;
 
     let stream = connector.connect(dnsname, plain).await?;
     let stream = TlsStream::Client(stream);
